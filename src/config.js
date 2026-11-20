@@ -10,7 +10,7 @@
  */
 var SIGNATURE_MFI_CONFIG = {
   // Inscription d'application Entra « Signature MFI »
-  clientId: "<CLIENT_ID>",
+  clientId: "4437b7a2-3d34-4e57-8ff7-0c890c2f9e83",
   tenantId: "3a904994-d98d-469c-b1cd-3efd32941d56",
 
   // Délai maximum d'attente de Microsoft Graph avant de passer au repli (ms).

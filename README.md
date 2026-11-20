@@ -32,7 +32,7 @@ Aperçu du modèle (données fictives) : <https://c-paoli.github.io/signature-mf
 |---|---|---|
 | Compte GitHub / dépôt | `manifest.xml` | `c-paoli` / `signature-mfi` (test) |
 | ID de tenant | `src/config.js` | renseigné |
-| ID client (application Entra) | `src/config.js` → `clientId` | **à renseigner** après la doc 1 |
+| ID client (application Entra) | `src/config.js` → `clientId` | renseigné |
 | Adresse de la boîte SAV (+ autres boîtes) | `src/config.js` → `boitesPartagees` | **à confirmer** |
 
 ## Procédures
