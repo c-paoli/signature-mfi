@@ -21,9 +21,12 @@ var SIGNATURE_MFI_CONFIG = {
   // utilisées si Graph est indisponible. 7 jours.
   dureeCacheMs: 7 * 24 * 3600 * 1000,
 
+  // Ligne placée au-dessus de la signature ("" pour ne rien mettre)
+  formulePolitesse: "Cordialement",
+
   // Partie fixe de la signature
   societe: {
-    adresse: "Strada Vecchja Box 1 - 20290 Borgo",
+    adresse: ["ROUTE DE STRADA VECCHJA – BOX 1&2", "20290 BORGO"], // une ligne par élément
     siteLibelle: "www.mfi.corsica",
     siteUrl: "https://www.mfi.corsica",
     couleur: "#467886"
@@ -32,16 +35,17 @@ var SIGNATURE_MFI_CONFIG = {
   // Logo (pièce jointe incorporée, voir src/logo.js)
   logo: {
     nomFichier: "logo-mfi.png",
-    largeur: 125, // px affichés (original 281 x 113)
-    hauteur: 50
+    largeur: 236, // px affichés (original 281 x 113)
+    hauteur: 95
   },
 
   // Boîtes partagées ayant une variante de signature (adresse en minuscules).
   // Quand le « De » passe sur l'une d'elles, la signature affiche le libellé
   // de la boîte, puis le nom de la personne qui écrit (si afficherNomUtilisateur).
   // Les champs vides ne sont pas affichés.
+  // D'autres boîtes seront ajoutées plus tard.
   boitesPartagees: {
-    "<ADRESSE_BOITE_SAV>": {
+    "sav@mfi.corsica": {
       libelle: "SERVICE APRÈS-VENTE",
       telephone: "",
       afficherNomUtilisateur: true
