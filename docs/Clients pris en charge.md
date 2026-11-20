@@ -1,0 +1,29 @@
+# Clients pris en charge et limites connues
+
+D'après la documentation Microsoft (vérifiée le 20/11/2026).
+
+| Client | Nouveau message / réponse / transfert | Changement du « De » (boîte partagée) | Données Entra (NAA) |
+|---|---|---|---|
+| OWA (navigateur) | oui | oui | oui |
+| Nouvel Outlook pour Windows | oui | oui | oui |
+| Outlook Android (≥ 4.2352) | oui | événement pris en charge (≥ 4.2502), **mais pas pour les boîtes partagées / délégations** | oui (≥ 4.2433) |
+| Outlook iOS (≥ 4.2352) | oui | idem Android | oui (≥ 4.2433) |
+| Outlook classique Windows | **non ciblé** | non ciblé | — |
+
+## Limites à connaître
+
+- **Outlook classique** : il exécute les événements dans un moteur JavaScript séparé qui demande un fichier unique et, pour l'authentification, un fichier `/.well-known/microsoft-officeaddins-allowed.json` **à la racine du domaine** — impossible sur une adresse `github.io/<dépôt>`. Non prioritaire (décision projet) ; les utilisateurs de l'Outlook classique gardent leur signature actuelle.
+- **Mobile – boîtes partagées** : sur Android / iOS, l'envoi « De » une boîte partagée n'est pas géré par l'événement `OnMessageFromChanged`. La variante SAV ne fonctionne donc que sur OWA et le nouvel Outlook.
+- **Mobile – brouillon** : si rien n'est saisi dans un nouveau message, aucun brouillon n'est enregistré, même avec la signature ajoutée (comportement normal).
+- **Mobile – « Répondre » depuis le bas du message** : la signature est ajoutée mais visible seulement en passant la rédaction en plein écran.
+- **iOS – « Partager »** : un message créé via le bouton Partager d'iOS ne déclenche pas le complément.
+- **Un seul complément événementiel à la fois** : si un autre complément de signature est installé, ils s'exécutent l'un après l'autre.
+- **60 secondes maximum** par événement ; le complément abandonne Graph après 8 s et passe au repli.
+- **Signature Outlook personnelle** : le complément désactive la signature du client sur le message en cours (`disableClientSignatureAsync`) pour éviter deux signatures.
+
+## Sources
+
+- <https://learn.microsoft.com/office/dev/add-ins/outlook/mobile-event-based>
+- <https://learn.microsoft.com/office/dev/add-ins/outlook/onmessagefromchanged-onappointmentfromchanged-events>
+- <https://learn.microsoft.com/javascript/api/requirement-sets/common/nested-app-auth-requirement-sets>
+- <https://learn.microsoft.com/office/dev/add-ins/outlook/use-sso-in-event-based-activation>

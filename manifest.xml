@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Complément Outlook « Signature MFI » - manifeste « add-in only » (XML).
+  Le manifeste XML est obligatoire pour Outlook Android / iOS.
+
+  URL d'hébergement : https://c-paoli.github.io/signature-mfi
+  Pour la changer (passage au compte GitHub MFI), utiliser :
+    outils\Changer-UrlBase.ps1 -Nouvelle "https://<compte>.github.io/<depot>"
+  (le script incrémente aussi <Version>).
+  Toute modification du manifeste = incrémenter <Version> avant de le redéployer.
+-->
+<OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
+  xsi:type="MailApp">
+  <Id>bb3a133e-6dcb-4530-9f3c-a8529e6c514a</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>MFI</ProviderName>
+  <DefaultLocale>fr-FR</DefaultLocale>
+  <DisplayName DefaultValue="Signature MFI"/>
+  <Description DefaultValue="Ajoute automatiquement la signature MFI aux nouveaux messages, à partir des informations Entra ID."/>
+  <IconUrl DefaultValue="https://c-paoli.github.io/signature-mfi/assets/icon-64.png"/>
+  <HighResolutionIconUrl DefaultValue="https://c-paoli.github.io/signature-mfi/assets/icon-128.png"/>
+  <SupportUrl DefaultValue="https://www.mfi.corsica"/>
+  <AppDomains>
+    <AppDomain>https://c-paoli.github.io</AppDomain>
+  </AppDomains>
+  <Hosts>
+    <Host Name="Mailbox"/>
+  </Hosts>
+  <Requirements>
+    <Sets>
+      <Set Name="Mailbox" MinVersion="1.1"/>
+    </Sets>
+  </Requirements>
+  <!-- Ancien schéma (obligatoire), remplacé par VersionOverrides sur les clients récents. -->
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://c-paoli.github.io/signature-mfi/src/commands.html"/>
+        <RequestedHeight>250</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+  <Permissions>ReadWriteItem</Permissions>
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit"/>
+  </Rule>
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1" xsi:type="VersionOverridesV1_1">
+      <Description resid="Appli.Description"/>
+      <!-- 1.5 : Outlook mobile ne déclare que Mailbox 1.5 ; les API d'événement y sont activées malgré tout. -->
+      <Requirements>
+        <bt:Sets DefaultMinVersion="1.5">
+          <bt:Set Name="Mailbox"/>
+        </bt:Sets>
+      </Requirements>
+      <Hosts>
+        <Host xsi:type="MailHost">
+          <!-- Page d'exécution des événements (nouvel Outlook, OWA, Mac, mobile).
+               Pas de surcharge JavaScript : Outlook classique pour Windows n'est pas ciblé
+               (voir docs/Clients pris en charge.md). -->
+          <Runtimes>
+            <Runtime resid="Runtime.Url"/>
+          </Runtimes>
+
+          <DesktopFormFactor>
+            <FunctionFile resid="Runtime.Url"/>
+            <ExtensionPoint xsi:type="LaunchEvent">
+              <LaunchEvents>
+                <LaunchEvent Type="OnNewMessageCompose" FunctionName="onNewMessageComposeHandler"/>
+                <LaunchEvent Type="OnMessageFromChanged" FunctionName="onMessageFromChangedHandler"/>
+              </LaunchEvents>
+              <SourceLocation resid="Runtime.Url"/>
+            </ExtensionPoint>
+          </DesktopFormFactor>
+
+          <MobileFormFactor>
+            <ExtensionPoint xsi:type="LaunchEvent">
+              <LaunchEvents>
+                <LaunchEvent Type="OnNewMessageCompose" FunctionName="onNewMessageComposeHandler"/>
+                <LaunchEvent Type="OnMessageFromChanged" FunctionName="onMessageFromChangedHandler"/>
+              </LaunchEvents>
+              <SourceLocation resid="Runtime.Url"/>
+            </ExtensionPoint>
+          </MobileFormFactor>
+        </Host>
+      </Hosts>
+      <Resources>
+        <bt:Images>
+          <bt:Image id="Icon.16x16" DefaultValue="https://c-paoli.github.io/signature-mfi/assets/icon-16.png"/>
+          <bt:Image id="Icon.32x32" DefaultValue="https://c-paoli.github.io/signature-mfi/assets/icon-32.png"/>
+          <bt:Image id="Icon.80x80" DefaultValue="https://c-paoli.github.io/signature-mfi/assets/icon-80.png"/>
+        </bt:Images>
+        <bt:Urls>
+          <bt:Url id="Runtime.Url" DefaultValue="https://c-paoli.github.io/signature-mfi/src/commands.html"/>
+        </bt:Urls>
+        <bt:LongStrings>
+          <bt:String id="Appli.Description" DefaultValue="Ajoute automatiquement la signature MFI aux nouveaux messages, à partir des informations Entra ID."/>
+        </bt:LongStrings>
+      </Resources>
+    </VersionOverrides>
+  </VersionOverrides>
+</OfficeApp>

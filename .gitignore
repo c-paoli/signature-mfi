@@ -1,0 +1,11 @@
+# Logo fourni à l’origine (copie publiée : assets/logo-mfi.png)
+Logo/
+
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Notes de travail internes (noms, adresse mail) : hors dépôt public
+CLAUDE.md
