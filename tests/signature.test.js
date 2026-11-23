@@ -35,17 +35,18 @@ function ligne(html, texte) {
 test("signature complète : ordre, styles et contenu", () => {
   const html = SignatureMFI.construire(SignatureMFI.depuisGraph(complet), config);
 
-  assert.ok(html.startsWith('<p style="margin:0;">Cordialement</p>'));
+  assert.ok(html.startsWith('<p style="margin:0;font-family:Aptos,'), "formule en Aptos");
+  assert.match(html, /^<p [^>]*>Cordialement<\/p>/);
   // le trait est la bordure gauche de la cellule qui contient le texte, sans marge haute ni basse
   assert.match(html, /<td valign="top" style="padding:0 5\.4pt 0 24pt;vertical-align:top;border-left:4\.5pt solid #467886;"><p /);
   assert.match(html, /src="cid:logo-mfi\.png"/);
   assert.match(html, /<td align="center" valign="middle"[^>]*vertical-align:middle/); // logo centré
 
   const nom = ligne(html, "JEAN EXEMPLE");
-  assert.match(nom.style, /font-size:10\.5pt;font-weight:bold;color:#222222/);
+  assert.match(nom.style, /font-size:12pt;font-weight:bold;color:#222222/);
 
   const fonction = ligne(html, "DIRECTEUR GÉNÉRAL");
-  assert.match(fonction.style, /font-size:7\.5pt;font-weight:bold/);
+  assert.match(fonction.style, /font-size:9pt;font-weight:bold/);
   assert.match(fonction.style, /color:#467886/);
 
   const tel = ligne(html, "04 95 00 00 00");
@@ -53,7 +54,7 @@ test("signature complète : ordre, styles et contenu", () => {
   ligne(html, "06 00 00 00 00");
   assert.match(ligne(html, "mailto:j\\.exemple@exemple\\.fr").contenu, /&#9679;/);
 
-  assert.match(ligne(html, "ROUTE DE STRADA VECCHJA – BOX 1&amp;2").style, /font-size:7pt;color:#666666/);
+  assert.match(ligne(html, "ROUTE DE STRADA VECCHJA – BOX 1&amp;2").style, /font-size:8pt;color:#666666/);
   ligne(html, "20290 BORGO");
   assert.match(ligne(html, "www\\.mfi\\.corsica").style, /font-weight:bold;color:#467886/);
 
@@ -92,7 +93,7 @@ test("caractères spéciaux échappés", () => {
 test("variante boîte partagée : libellé, nom de l'expéditeur, adresse de la boîte", () => {
   const boite = { adresse: "sav@exemple.fr", libelle: "Service après-vente", telephone: "04 95 11 11 11", afficherNomUtilisateur: true };
   const html = SignatureMFI.construire(SignatureMFI.depuisGraph(complet), config, boite, "logo-mfi-abc.png");
-  assert.match(ligne(html, "SERVICE APRÈS-VENTE").style, /font-size:10\.5pt/);
+  assert.match(ligne(html, "SERVICE APRÈS-VENTE").style, /font-size:12pt/);
   assert.match(ligne(html, "JEAN EXEMPLE").style, /color:#467886/);
   assert.match(html, /mailto:sav@exemple\.fr/);
   ligne(html, "04 95 11 11 11");

@@ -4,7 +4,8 @@
  * Fonctions pures (aucun appel Office ni réseau) : utilisables dans le complément,
  * dans la page d'aperçu (index.html) et dans les tests Node (tests/signature.test.js).
  *
- * Modèle (validé par Cédric le 20/11/2026, d'après la capture de sa signature) :
+ * Modèle (validé par Cédric le 20/11/2026, tailles revues le 23/11/2026 :
+ * nom 12 pt, fonction 9 pt, téléphones / mail 9 pt, adresse et site 8 pt) :
  *
  *   Cordialement
  *
@@ -30,10 +31,10 @@ var SignatureMFI = (function () {
 
   // Styles de chaque type de ligne (la couleur MFI est ajoutée à partir de la config).
   var STYLES = {
-    nom: "font-size:10.5pt;font-weight:bold;color:#222222;letter-spacing:0.3px;",
-    fonction: "font-size:7.5pt;font-weight:bold;letter-spacing:0.5px;", // + couleur MFI
-    contact: "font-size:8.5pt;color:#333333;line-height:160%;",
-    adresse: "font-size:7pt;color:#666666;line-height:170%;",
+    nom: "font-size:12pt;font-weight:bold;color:#222222;letter-spacing:0.3px;",
+    fonction: "font-size:9pt;font-weight:bold;letter-spacing:0.5px;", // + couleur MFI
+    contact: "font-size:9pt;color:#333333;line-height:160%;",
+    adresse: "font-size:8pt;color:#666666;line-height:170%;",
     site: "font-size:8pt;font-weight:bold;"
   };
 
@@ -190,9 +191,9 @@ var SignatureMFI = (function () {
       "0"
     );
 
-    // Formule de politesse au-dessus du tableau, dans la police du message, puis deux lignes vides.
+    // Formule de politesse au-dessus du tableau, en Aptos comme le reste de la signature, puis deux lignes vides.
     var formule = nettoyer(config.formulePolitesse);
-    var entete = formule ? '<p style="margin:0;">' + echapper(formule) + "</p><div><br></div><div><br></div>" : "";
+    var entete = formule ? '<p style="margin:0;font-family:' + POLICE + ';">' + echapper(formule) + "</p><div><br></div><div><br></div>" : "";
 
     // Tableau principal : logo | marge | bloc de texte, centrés verticalement l'un face à l'autre.
     // Le trait 4,5 pt est la bordure gauche d'un tableau interne qui ne contient que le texte,
