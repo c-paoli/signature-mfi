@@ -37,14 +37,15 @@ test("signature complète : ordre, styles et contenu", () => {
 
   assert.ok(html.startsWith('<p style="margin:0;font-family:Aptos,'), "formule en Aptos");
   assert.match(html, /^<p [^>]*>Cordialement<\/p>/);
-  // le trait est la bordure gauche de la cellule qui contient le texte, sans marge haute ni basse
-  assert.match(html, /<td valign="top" style="padding:0 5\.4pt 0 24pt;vertical-align:top;border-left:4\.5pt solid #467886;"><p /);
-  assert.match(html, /src="cid:logo-mfi\.png"/);
-  assert.match(html, /<td width="250" align="center" valign="middle"[^>]*vertical-align:middle/); // logo centré
-  // largeurs fixes (sinon le nouvel Outlook réduit la signature à la lecture)
+  // un seul tableau à 4 colonnes à largeurs fixes : logo 250 | trait 40 | espace 32 | texte 238 = 560
+  assert.strictEqual((html.match(/<table/g) || []).length, 1, "pas de tableau imbriqué");
   assert.match(html, /<table width="560" [^>]*style="width:560px;/);
-  assert.match(html, /<td width="40" style="width:40px;/);
-  assert.match(html, /<td width="270" valign="middle" style="width:270px;/);
+  assert.match(html, /<td width="250" style="width:250px;padding:0;vertical-align:middle;text-align:center;"><p /); // logo centré
+  assert.match(html, /<td width="40" style="width:40px;padding:0;border-right:4\.5pt solid #467886;">/); // le trait
+  assert.match(html, /<td width="32" style="width:32px;padding:0;">/);
+  assert.match(html, /<td width="238" style="width:238px;padding:0;vertical-align:middle;"><p /);
+  assert.match(html, /src="cid:logo-mfi\.png"/);
+  assert.doesNotMatch(html, /display:block/); // logo dans un simple paragraphe
 
   const nom = ligne(html, "JEAN EXEMPLE");
   assert.match(nom.style, /font-size:12pt;font-weight:bold;color:#222222/);

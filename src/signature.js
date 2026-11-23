@@ -44,8 +44,10 @@ var SignatureMFI = (function () {
   var ESPACE_APRES_CONTACT = "2pt";
   var ESPACE_APRES_ADRESSE = "7pt";
 
-  // Largeurs fixes (px) de l'espace entre le logo et le trait, et de la colonne de texte.
+  // Largeurs fixes (px) : espace entre le logo et le trait, espace entre le trait et le texte,
+  // et colonne de texte (espace trait-texte compris). Tableau total : 560 px.
   var LARGEUR_ESPACE = 40;
+  var ESPACE_TRAIT_TEXTE = 32; // = 24 pt
   var LARGEUR_TEXTE = 270;
 
   function echapper(texte) {
@@ -212,41 +214,41 @@ var SignatureMFI = (function () {
     var formule = nettoyer(config.formulePolitesse);
     var entete = formule ? '<p style="margin:0;font-family:' + POLICE + ';">' + echapper(formule) + "</p><div><br></div><div><br></div>" : "";
 
-    // Tableau principal : logo | marge | bloc de texte, centrés verticalement l'un face à l'autre.
-    // Le trait 4,5 pt est la bordure gauche d'un tableau interne qui ne contient que le texte,
-    // sans marge haute ni basse : il commence au nom et finit au site web.
-    // Largeurs FIXES sur le tableau et chaque colonne : sans elles, le nouvel Outlook mesure mal
-    // le bloc à la lecture et le réduit (flèche « agrandir »). Constaté le 23/11/2026.
+    // Un seul tableau à 4 colonnes, calqué sur les signatures Outlook existantes qui s'affichent
+    // correctement dans le nouvel Outlook : logo | trait | espace | texte.
+    //  - largeurs FIXES sur le tableau et chaque colonne ;
+    //  - logo dans un simple paragraphe (pas de display:block) ;
+    //  - le trait 4,5 pt est la bordure droite d'une colonne étroite : il a la hauteur de la ligne
+    //    du tableau, c'est-à-dire du bloc de texte (du nom au site web) dès qu'il est plus haut que
+    //    le logo, ce qui est le cas normal. Bloc très court (repli sans Entra) : le trait prend la
+    //    hauteur du logo et le texte est centré.
+    // Avec un tableau imbriqué et un logo en display:block, le nouvel Outlook réduisait la signature
+    // à la lecture (bouton « Afficher la taille d'origine »). Constaté le 23/11/2026.
     var logo = config.logo;
     var largeurLogo = logo.largeur + 14; // logo + 7 px de chaque côté
-    var largeurEspace = LARGEUR_ESPACE;
-    var largeurTexte = LARGEUR_TEXTE;
-    var largeurTotale = largeurLogo + largeurEspace + largeurTexte;
-    function tableau(largeur, styleEnPlus) {
-      return (
-        '<table width="' + largeur + '" cellpadding="0" cellspacing="0" border="0" role="presentation" ' +
-        'style="width:' + largeur + "px;border-collapse:collapse;border-spacing:0;" + (styleEnPlus || "") + '">'
-      );
+    var largeurTrait = LARGEUR_ESPACE; // le trait est au bord droit de cette colonne
+    var largeurEspace = ESPACE_TRAIT_TEXTE;
+    var largeurTexte = LARGEUR_TEXTE - ESPACE_TRAIT_TEXTE;
+    var largeurTotale = largeurLogo + largeurTrait + largeurEspace + largeurTexte;
+    function cellule(largeur, style, contenu) {
+      return '<td width="' + largeur + '" style="width:' + largeur + "px;padding:0;" + style + '">' + contenu + "</td>";
     }
     return (
       entete +
-      tableau(largeurTotale, "font-family:" + POLICE + ";") +
+      '<table width="' + largeurTotale + '" cellpadding="0" cellspacing="0" border="0" ' +
+      'style="width:' + largeurTotale + "px;border-collapse:collapse;border-spacing:0;font-family:" + POLICE + ';">' +
       "<tr>" +
-      '<td width="' + largeurLogo + '" align="center" valign="middle" style="width:' + largeurLogo +
-      'px;padding:8px 0;text-align:center;vertical-align:middle;">' +
-      '<img src="cid:' + echapper(nomLogo) + '" width="' + logo.largeur + '" height="' + logo.hauteur +
-      '" alt="MFI" style="border:0;display:block;margin:0 auto;width:' + logo.largeur + "px;height:" + logo.hauteur + 'px;">' +
-      "</td>" +
-      '<td width="' + largeurEspace + '" style="width:' + largeurEspace + 'px;padding:0;">&nbsp;</td>' +
-      '<td width="' + largeurTexte + '" valign="middle" style="width:' + largeurTexte + 'px;padding:0;vertical-align:middle;">' +
-      tableau(largeurTexte) +
-      "<tr>" +
-      '<td valign="top" style="padding:0 5.4pt 0 24pt;vertical-align:top;border-left:4.5pt solid ' + couleur + ';">' +
-      lignes.join("") +
-      "</td>" +
-      "</tr>" +
-      "</table>" +
-      "</td>" +
+      cellule(
+        largeurLogo,
+        "vertical-align:middle;text-align:center;",
+        '<p style="margin:0;text-align:center;">' +
+          '<img src="cid:' + echapper(nomLogo) + '" width="' + logo.largeur + '" height="' + logo.hauteur +
+          '" alt="MFI" style="border:0;width:' + logo.largeur + "px;height:" + logo.hauteur + 'px;">' +
+          "</p>"
+      ) +
+      cellule(largeurTrait, "border-right:4.5pt solid " + couleur + ";", "&nbsp;") +
+      cellule(largeurEspace, "", "&nbsp;") +
+      cellule(largeurTexte, "vertical-align:middle;", lignes.join("")) +
       "</tr>" +
       "</table>"
     );

@@ -4,7 +4,7 @@ Compte de test : celui de Cédric uniquement. Cocher et noter le résultat (OK /
 
 | # | Scénario | OWA | Nouvel Outlook | Android | iOS |
 |---|---|---|---|---|---|
-| 1 | Nouveau message : signature complète (logo, nom, fonction, téléphone(s), mail, adresse, site) | OK 23/11 | OK 23/11 | | |
+| 1 | Nouveau message : signature complète (logo, nom, fonction, téléphone(s), mail, adresse, site) | OK 23/11 | OK 23/11 | OK 23/11 | OK 23/11 |
 | 2 | Répondre | | | | |
 | 3 | Répondre à tous | | | | |
 | 4 | Transférer | | | | |
