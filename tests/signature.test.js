@@ -40,7 +40,11 @@ test("signature complète : ordre, styles et contenu", () => {
   // le trait est la bordure gauche de la cellule qui contient le texte, sans marge haute ni basse
   assert.match(html, /<td valign="top" style="padding:0 5\.4pt 0 24pt;vertical-align:top;border-left:4\.5pt solid #467886;"><p /);
   assert.match(html, /src="cid:logo-mfi\.png"/);
-  assert.match(html, /<td align="center" valign="middle"[^>]*vertical-align:middle/); // logo centré
+  assert.match(html, /<td width="250" align="center" valign="middle"[^>]*vertical-align:middle/); // logo centré
+  // largeurs fixes (sinon le nouvel Outlook réduit la signature à la lecture)
+  assert.match(html, /<table width="560" [^>]*style="width:560px;/);
+  assert.match(html, /<td width="40" style="width:40px;/);
+  assert.match(html, /<td width="270" valign="middle" style="width:270px;/);
 
   const nom = ligne(html, "JEAN EXEMPLE");
   assert.match(nom.style, /font-size:12pt;font-weight:bold;color:#222222/);

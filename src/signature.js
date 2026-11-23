@@ -44,6 +44,10 @@ var SignatureMFI = (function () {
   var ESPACE_APRES_CONTACT = "2pt";
   var ESPACE_APRES_ADRESSE = "7pt";
 
+  // Largeurs fixes (px) de l'espace entre le logo et le trait, et de la colonne de texte.
+  var LARGEUR_ESPACE = 40;
+  var LARGEUR_TEXTE = 270;
+
   function echapper(texte) {
     return String(texte == null ? "" : texte)
       .replace(/&/g, "&amp;")
@@ -211,20 +215,31 @@ var SignatureMFI = (function () {
     // Tableau principal : logo | marge | bloc de texte, centrés verticalement l'un face à l'autre.
     // Le trait 4,5 pt est la bordure gauche d'un tableau interne qui ne contient que le texte,
     // sans marge haute ni basse : il commence au nom et finit au site web.
+    // Largeurs FIXES sur le tableau et chaque colonne : sans elles, le nouvel Outlook mesure mal
+    // le bloc à la lecture et le réduit (flèche « agrandir »). Constaté le 23/11/2026.
     var logo = config.logo;
-    var tableau =
-      '<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;border-spacing:0;';
+    var largeurLogo = logo.largeur + 14; // logo + 7 px de chaque côté
+    var largeurEspace = LARGEUR_ESPACE;
+    var largeurTexte = LARGEUR_TEXTE;
+    var largeurTotale = largeurLogo + largeurEspace + largeurTexte;
+    function tableau(largeur, styleEnPlus) {
+      return (
+        '<table width="' + largeur + '" cellpadding="0" cellspacing="0" border="0" role="presentation" ' +
+        'style="width:' + largeur + "px;border-collapse:collapse;border-spacing:0;" + (styleEnPlus || "") + '">'
+      );
+    }
     return (
       entete +
-      tableau + "font-family:" + POLICE + ';">' +
+      tableau(largeurTotale, "font-family:" + POLICE + ";") +
       "<tr>" +
-      '<td align="center" valign="middle" style="padding:6pt 5.4pt;text-align:center;vertical-align:middle;">' +
+      '<td width="' + largeurLogo + '" align="center" valign="middle" style="width:' + largeurLogo +
+      'px;padding:8px 0;text-align:center;vertical-align:middle;">' +
       '<img src="cid:' + echapper(nomLogo) + '" width="' + logo.largeur + '" height="' + logo.hauteur +
-      '" alt="MFI" style="border:0;display:block;width:' + logo.largeur + "px;height:" + logo.hauteur + 'px;">' +
+      '" alt="MFI" style="border:0;display:block;margin:0 auto;width:' + logo.largeur + "px;height:" + logo.hauteur + 'px;">' +
       "</td>" +
-      '<td style="padding:0;width:30pt;">&nbsp;</td>' +
-      '<td valign="middle" style="padding:0;vertical-align:middle;">' +
-      tableau + '">' +
+      '<td width="' + largeurEspace + '" style="width:' + largeurEspace + 'px;padding:0;">&nbsp;</td>' +
+      '<td width="' + largeurTexte + '" valign="middle" style="width:' + largeurTexte + 'px;padding:0;vertical-align:middle;">' +
+      tableau(largeurTexte) +
       "<tr>" +
       '<td valign="top" style="padding:0 5.4pt 0 24pt;vertical-align:top;border-left:4.5pt solid ' + couleur + ';">' +
       lignes.join("") +
