@@ -15,7 +15,7 @@
   xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
   xsi:type="MailApp">
   <Id>bb3a133e-6dcb-4530-9f3c-a8529e6c514a</Id>
-  <Version>1.0.0.0</Version>
+  <Version>1.0.1.0</Version>
   <ProviderName>MFI</ProviderName>
   <DefaultLocale>fr-FR</DefaultLocale>
   <DisplayName DefaultValue="Signature MFI"/>
@@ -69,6 +69,31 @@
 
           <DesktopFormFactor>
             <FunctionFile resid="Runtime.Url"/>
+            <!-- Bouton « Signature MFI » en rédaction (menu Applications) : remet la signature
+                 correspondant au « De » actuel. Secours pour les cas où l'événement ne se déclenche
+                 pas (ex. brouillon agrandi dans une nouvelle fenêtre). -->
+            <ExtensionPoint xsi:type="MessageComposeCommandSurface">
+              <OfficeTab id="TabDefault">
+                <Group id="SignatureMfi.Groupe">
+                  <Label resid="Groupe.Libelle"/>
+                  <Control xsi:type="Button" id="SignatureMfi.Bouton">
+                    <Label resid="Bouton.Libelle"/>
+                    <Supertip>
+                      <Title resid="Bouton.Libelle"/>
+                      <Description resid="Bouton.Infobulle"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon.16x16"/>
+                      <bt:Image size="32" resid="Icon.32x32"/>
+                      <bt:Image size="80" resid="Icon.80x80"/>
+                    </Icon>
+                    <Action xsi:type="ExecuteFunction">
+                      <FunctionName>insererSignatureMfi</FunctionName>
+                    </Action>
+                  </Control>
+                </Group>
+              </OfficeTab>
+            </ExtensionPoint>
             <ExtensionPoint xsi:type="LaunchEvent">
               <LaunchEvents>
                 <LaunchEvent Type="OnNewMessageCompose" FunctionName="onNewMessageComposeHandler"/>
@@ -98,7 +123,12 @@
         <bt:Urls>
           <bt:Url id="Runtime.Url" DefaultValue="https://c-paoli.github.io/signature-mfi/src/commands.html"/>
         </bt:Urls>
+        <bt:ShortStrings>
+          <bt:String id="Groupe.Libelle" DefaultValue="Signature MFI"/>
+          <bt:String id="Bouton.Libelle" DefaultValue="Signature MFI"/>
+        </bt:ShortStrings>
         <bt:LongStrings>
+          <bt:String id="Bouton.Infobulle" DefaultValue="Remet la signature MFI correspondant à l'expéditeur actuel (personnelle ou boîte partagée)."/>
           <bt:String id="Appli.Description" DefaultValue="Ajoute automatiquement la signature MFI aux nouveaux messages, à partir des informations Entra ID."/>
         </bt:LongStrings>
       </Resources>

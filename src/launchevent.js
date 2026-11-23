@@ -3,6 +3,7 @@
  *
  *   OnNewMessageCompose  -> onNewMessageComposeHandler  (nouveau mail, réponse, transfert)
  *   OnMessageFromChanged -> onMessageFromChangedHandler (changement du « De », ex. boîte SAV)
+ *   Bouton « Signature MFI » -> insererSignatureMfi     (secours manuel, ex. brouillon agrandi)
  *
  * Déroulement :
  *   1. lire l'adresse du « De » ;
@@ -313,7 +314,36 @@ async function assurerLogo(item) {
 /* Traitement commun                                                  */
 /* ------------------------------------------------------------------ */
 
-async function poserSignature(event, origine) {
+/** Petit bandeau d'information en haut du mail (bouton uniquement). Ne lève jamais d'erreur. */
+function notifier(item, message) {
+  try {
+    if (!item || !item.notificationMessages) return Promise.resolve();
+    return officeAsync(function (cb) {
+      item.notificationMessages.replaceAsync(
+        "signatureMfi",
+        {
+          type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
+          message: message,
+          icon: "Icon.16x16",
+          persistent: false
+        },
+        cb
+      );
+    }).catch(function (e) {
+      journal("Notification impossible :", e && e.message);
+    });
+  } catch (e) {
+    return Promise.resolve();
+  }
+}
+
+/**
+ * @param {object}  event             événement Office (completed() appelé dans tous les cas)
+ * @param {string}  origine           libellé pour le journal
+ * @param {boolean} avecNotification  afficher un bandeau de confirmation (bouton)
+ */
+async function poserSignature(event, origine, avecNotification) {
+  var item = null;
   var fini = false;
   function terminer() {
     if (fini) return;
@@ -331,7 +361,7 @@ async function poserSignature(event, origine) {
   }, 50000);
 
   try {
-    var item = Office.context.mailbox.item;
+    item = Office.context.mailbox.item;
     journal("Événement :", origine);
 
     var expediteur = await lireExpediteur(item);
@@ -367,8 +397,12 @@ async function poserSignature(event, origine) {
       item.body.setSignatureAsync(html, { coercionType: Office.CoercionType.Html }, cb);
     });
     journal("Signature posée (" + (boite ? "boîte " + boite.adresse : "personnelle") + ").");
+    if (avecNotification) {
+      await notifier(item, "Signature MFI mise à jour (" + (boite ? boite.adresse : "signature personnelle") + ").");
+    }
   } catch (e) {
     journal("Erreur :", e && e.message ? e.message : e);
+    if (avecNotification) await notifier(item, "Signature MFI : la mise à jour a échoué.");
   } finally {
     clearTimeout(garde);
     terminer();
@@ -383,6 +417,12 @@ function onMessageFromChangedHandler(event) {
   poserSignature(event, "OnMessageFromChanged");
 }
 
+/** Bouton « Signature MFI » (menu Applications en rédaction) : remet la signature du « De » actuel. */
+function insererSignatureMfi(event) {
+  poserSignature(event, "Bouton Signature MFI", true);
+}
+
 // Association obligatoire entre les noms du manifeste et les fonctions JavaScript.
 Office.actions.associate("onNewMessageComposeHandler", onNewMessageComposeHandler);
 Office.actions.associate("onMessageFromChangedHandler", onMessageFromChangedHandler);
+Office.actions.associate("insererSignatureMfi", insererSignatureMfi);

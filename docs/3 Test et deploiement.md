@@ -37,6 +37,17 @@ Même circuit que la production. Avant cette étape, **supprimer le complément 
 Dans **Applications intégrées** > « Signature MFI » > **Utilisateurs** : passer à *Toute l'organisation* (ou un groupe pilote d'abord).
 **Ne pas faire sans validation explicite de Cédric.**
 
+## Mise à jour du manifeste (nouvelle version)
+
+À faire **uniquement quand `manifest.xml` change** (bouton, icônes, événements…). Une modification du seul code (`src/`) ne demande rien : elle est en ligne dès la publication sur GitHub Pages.
+
+1. Vérifier que `<Version>` a été incrémentée dans `manifest.xml` et que la nouvelle version est publiée : <https://c-paoli.github.io/signature-mfi/manifest.xml>.
+2. Centre d'administration Microsoft 365 > **Paramètres** > **Applications intégrées** > « Signature MFI ».
+3. Choisir **Mettre à jour** (bouton en bas à droite pour une application métier), et redonner l'URL du manifeste (ou le fichier). Accepter les autorisations si elles sont redemandées.
+4. Propagation : jusqu'à 24 h (parfois 72 h). Redémarrer Outlook ensuite.
+
+Alternative PowerShell (module Exchange Online / Centralized Deployment) : `Set-OrganizationAddIn -ProductId <id> -ManifestPath manifest.xml -Locale fr-FR`.
+
 ## Diagnostic
 
 - Les messages du complément commencent par `[Signature MFI]`.
