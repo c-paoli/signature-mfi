@@ -12,7 +12,7 @@ Compte de test : celui de Cédric uniquement. Cocher et noter le résultat (OK /
 | 6 | Mode sombre : logo et texte lisibles | | | | |
 | 7 | Une seule signature (pas de doublon avec la signature Outlook personnelle) | | | | |
 | 8 | Réponse à un mail d'un collègue déjà signé MFI : un seul logo dans *notre* signature, celui du message cité intact | | | | |
-| 9 | « De » → boîte partagée SAV : variante SAV, titre (« Poste ») et téléphone lus dans la fiche Entra de la boîte | | | | |
+| 9 | « De » → boîte partagée SAV : variante SAV, titre (« Poste ») et téléphone lus dans la fiche Entra de la boîte | OK 23/11 | | | |
 | 9b | Écrire depuis le dossier de la boîte SAV (ouverte comme compte à part) : variante SAV et non signature personnelle | | | | |
 | 10 | « De » → retour sur son adresse : signature personnelle | | | | |
 | 11 | Champ Entra vide (ex. vider le mobile) : pas de ligne « ● » vide | | | | |
