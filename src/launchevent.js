@@ -365,6 +365,18 @@ async function poserSignature(event, origine, avecNotification) {
     journal("Événement :", origine);
 
     var expediteur = await lireExpediteur(item);
+
+    // Filtre par domaine : le complément est déployé à toute l'organisation, mais ne pose la
+    // signature MFI que pour les comptes (et les « De ») des domaines autorisés dans config.js.
+    // Sinon il ne fait RIEN : la signature Outlook de la personne reste en place.
+    var moi = Office.context.mailbox.userProfile.emailAddress;
+    if (!SignatureMFI.domaineAutorise(moi, SIGNATURE_MFI_CONFIG) ||
+        !SignatureMFI.domaineAutorise(expediteur.adresse || moi, SIGNATURE_MFI_CONFIG)) {
+      journal("Domaine non concerné, signature inchangée :", expediteur.adresse || moi);
+      if (avecNotification) await notifier(item, "Signature MFI : ce compte n'est pas concerné (domaine non géré).");
+      return;
+    }
+
     // Fiche de l'utilisateur et, le cas échéant, fiche de la boîte partagée : lues en parallèle.
     var lectures = await Promise.all([lirePersonne(), completerBoite(determinerBoite(expediteur))]);
     var personne = lectures[0];

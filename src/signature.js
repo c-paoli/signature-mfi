@@ -254,7 +254,21 @@ var SignatureMFI = (function () {
     );
   }
 
+  /**
+   * true si l'adresse appartient à un des domaines de config.domainesAutorises
+   * (comparaison sans casse). Liste vide ou absente = tous les domaines.
+   */
+  function domaineAutorise(adresse, config) {
+    var liste = (config && config.domainesAutorises) || [];
+    if (!liste.length) return true;
+    var domaine = String(adresse || "").trim().toLowerCase().split("@")[1] || "";
+    return liste.some(function (d) {
+      return String(d).trim().toLowerCase() === domaine;
+    });
+  }
+
   return {
+    domaineAutorise: domaineAutorise,
     depuisGraph: depuisGraph,
     telephonesGraph: telephonesGraph,
     construire: construire,

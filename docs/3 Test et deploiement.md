@@ -32,33 +32,26 @@ Même circuit que la production. Avant cette étape, **supprimer le complément 
 5. Accepter les autorisations demandées (lecture / écriture de l'élément en cours de rédaction) > **Déployer**.
 6. Délai de propagation : de quelques minutes à **24 h**. Redémarrer Outlook (et l'application mobile) ensuite.
 
-## Étape C — Déploiement par groupe (après validation)
+## Étape C — Toute l'organisation, filtrée par domaine (après validation)
 
 **Ne pas faire sans validation explicite de Cédric.**
 
-On déploie le complément à un **groupe** plutôt qu'à « toute l'organisation » : on choisit ainsi qui a la signature automatique (une personne qui doit garder une signature à part n'est simplement pas dans le groupe), et une arrivée se gère en ajoutant la personne au groupe.
+Choix retenu le 23/11/2026 : **déployer à toute l'organisation** et laisser le **code filtrer par domaine** (`domainesAutorises` dans `src/config.js`, aujourd'hui `["mfi.corsica"]`).
+- Compte ou « De » en **@mfi.corsica** : signature MFI posée automatiquement.
+- Autre domaine du tenant (ex. comptes Lupi, Stratecor) : le complément **ne fait rien**, la signature Outlook de la personne reste en place.
+- Arrivée : rien à faire côté déploiement (créer le compte et remplir sa fiche Entra). Nouveau domaine à couvrir : l'ajouter à `domainesAutorises` et publier.
 
-### C1. Créer le groupe « Signature MFI »
+1. **Applications intégrées** > « Signature MFI » > **Utilisateurs** : passer à **Toute l'organisation**.
+2. Propagation : jusqu'à **24 h**. Prévenir les utilisateurs de redémarrer Outlook.
+3. Prérequis côté postes : **nouvel Outlook** sur PC (l'Outlook classique n'applique pas la signature).
 
-Type : **groupe de sécurité à extension messagerie** (*mail-enabled security group*).
-- Le déploiement des compléments accepte les groupes Microsoft 365, listes de distribution, groupes dynamiques et groupes de sécurité **à extension messagerie**, mais **pas les groupes de sécurité simples** (sans adresse).
-- Pas de boîte, SharePoint ni Teams créés autour (contrairement à un groupe Microsoft 365), et il peut être masqué du carnet d'adresses.
-- Groupe dynamique à éviter : il demande une licence Entra ID P1 par membre (absente des comptes Business Standard).
+### Variante (si un jour une personne en @mfi.corsica doit garder une signature à part)
 
-1. Centre d'administration Exchange : <https://admin.exchange.microsoft.com> > **Destinataires** > **Groupes** > **Ajouter un groupe**.
-2. Type : **Sécurité à extension messagerie** ; nom : `Signature MFI` ; adresse : par ex. `signature-mfi@mfi.corsica`.
-3. Propriétaire : Cédric Paoli. Membres : les collaborateurs concernés, **ajoutés directement** (voir le tableau `Informations pour le deploiement Signature MFI.xlsx`).
-   - ⚠️ **Pas de groupe dans le groupe** : les membres d'un groupe imbriqué ne reçoivent pas le complément.
-4. Paramètres : cocher **Masquer ce groupe de la liste d'adresses globale** ; ne pas autoriser les expéditeurs externes.
-
-### C2. Affecter le complément au groupe
-
-1. **Applications intégrées** > « Signature MFI » > **Utilisateurs** > *Utilisateurs/groupes spécifiques*.
-2. Ajouter le groupe **Signature MFI** (on peut garder Cédric en individuel).
-3. Propagation : jusqu'à **24 h** (ajout ou retrait). Prévenir les utilisateurs de redémarrer Outlook.
-4. Prérequis côté postes : **nouvel Outlook** sur PC (l'Outlook classique n'applique pas la signature).
-
-Ensuite : arrivée = ajouter la personne au groupe (et remplir sa fiche Entra) ; départ ou signature à part = la retirer du groupe.
+Le filtre par domaine ne permet pas d'exclure une personne précise (son adresse devrait figurer dans le code, qui est public). Il faut alors déployer à un **groupe** au lieu de toute l'organisation :
+- type **groupe de sécurité à extension messagerie** (les groupes de sécurité simples ne sont pas pris en charge ; groupe dynamique à éviter, il demande Entra ID P1 par membre) ;
+- Centre d'administration Exchange > **Destinataires** > **Groupes** > **Ajouter un groupe** > *Sécurité à extension messagerie*, nom `Signature MFI`, **masqué** de la liste d'adresses globale ;
+- membres **ajoutés directement** (pas de groupe imbriqué : ses membres ne recevraient pas le complément) ;
+- Applications intégrées > « Signature MFI » > Utilisateurs > *Utilisateurs/groupes spécifiques* > ce groupe.
 
 ## Mise à jour du manifeste (nouvelle version)
 

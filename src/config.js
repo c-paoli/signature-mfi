@@ -13,6 +13,11 @@ var SIGNATURE_MFI_CONFIG = {
   clientId: "4437b7a2-3d34-4e57-8ff7-0c890c2f9e83",
   tenantId: "3a904994-d98d-469c-b1cd-3efd32941d56",
 
+  // Domaines pour lesquels la signature MFI est posée. Le complément est déployé à toute
+  // l'organisation : pour un compte (ou un « De ») d'un autre domaine, il ne fait rien et la
+  // signature Outlook de la personne reste en place. Liste vide = tous les domaines.
+  domainesAutorises: ["mfi.corsica"],
+
   // Délai maximum d'attente de Microsoft Graph avant de passer au repli (ms).
   // Le complément dispose de 60 s au total ; on reste très en dessous.
   delaiGraphMs: 8000,

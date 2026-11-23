@@ -126,6 +126,17 @@ test("boîte partagée : téléphones de la fiche Entra, sauf numéro forcé dan
   assert.strictEqual((sansFiche.match(/&#9679;/g) || []).length, 1); // seule la puce du mail
 });
 
+test("filtre par domaine : seuls les domaines autorisés reçoivent la signature", () => {
+  assert.strictEqual(JSON.stringify(config.domainesAutorises), '["mfi.corsica"]');
+  assert.ok(SignatureMFI.domaineAutorise("c.paoli@mfi.corsica", config));
+  assert.ok(SignatureMFI.domaineAutorise("SAV@MFI.Corsica", config)); // sans casse
+  assert.ok(!SignatureMFI.domaineAutorise("l.pietri@lupi.corsica", config));
+  assert.ok(!SignatureMFI.domaineAutorise("stratecor@stratecor.fr", config));
+  assert.ok(!SignatureMFI.domaineAutorise("x@sous.mfi.corsica", config)); // domaine exact
+  assert.ok(!SignatureMFI.domaineAutorise("", config));
+  assert.ok(SignatureMFI.domaineAutorise("qui@importe.fr", { domainesAutorises: [] })); // liste vide = tous
+});
+
 test("la boîte SAV est configurée", () => {
   assert.ok(config.boitesPartagees["sav@mfi.corsica"]);
 });
