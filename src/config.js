@@ -39,15 +39,20 @@ var SIGNATURE_MFI_CONFIG = {
     hauteur: 95
   },
 
-  // Boîtes partagées ayant une variante de signature (adresse en minuscules).
-  // Quand le « De » passe sur l'une d'elles, la signature affiche le libellé
-  // de la boîte, puis le nom de la personne qui écrit (si afficherNomUtilisateur).
+  // Boîtes partagées (adresse en minuscules).
+  // Quand le « De » passe sur une boîte partagée, la signature affiche son titre,
+  // puis le nom de la personne qui écrit (si afficherNomUtilisateur).
+  // Tout se règle dans la FICHE ENTRA de la boîte, comme pour les personnes :
+  //   - titre      = champ « Poste » / « Intitulé du poste » (jobTitle), sinon le nom complet ;
+  //   - téléphones = « Téléphone professionnel » et « Téléphone mobile ».
   // Les champs vides ne sont pas affichés.
-  // D'autres boîtes seront ajoutées plus tard.
+  // Une boîte absente de cette liste fonctionne quand même (même comportement).
+  // « libelle » et « telephone » ne servent qu'à FORCER une valeur à la place de la
+  // fiche Entra : les laisser vides en temps normal.
   boitesPartagees: {
     "sav@mfi.corsica": {
-      libelle: "SERVICE APRÈS-VENTE",
-      telephone: "",
+      libelle: "", // vide = « Poste » de la fiche Entra (ex. SERVICE APRÈS-VENTE)
+      telephone: "", // vide = numéro(s) de la fiche Entra
       afficherNomUtilisateur: true
     }
   }

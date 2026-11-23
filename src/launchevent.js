@@ -8,6 +8,7 @@
  *   1. lire l'adresse du « De » ;
  *   2. lire la fiche Entra de l'utilisateur via Microsoft Graph (NAA + MSAL, jeton silencieux) ;
  *      en cas d'échec : dernières données connues (cache local), sinon nom du profil Outlook ;
+ *      si le « De » est une boîte partagée, lire aussi sa fiche Entra (titre, téléphones) en parallèle ;
  *   3. insérer le logo en pièce jointe incorporée ;
  *   4. désactiver la signature du client Outlook et poser la signature MFI ;
  *   5. event.completed() dans tous les cas.
@@ -104,7 +105,12 @@ function obtenirClientMsal() {
   return clientMsal;
 }
 
-async function lireGraph() {
+/**
+ * Appel Graph GET avec un jeton NAA silencieux.
+ * @param {string} url
+ * @param {string[]} scopes  ["User.Read"] pour /me, ["User.Read.All"] pour la fiche d'une boîte partagée
+ */
+async function appelGraph(url, scopes) {
   var cfg = SIGNATURE_MFI_CONFIG;
   if (estMarqueur(cfg.clientId) || estMarqueur(cfg.tenantId)) {
     throw new Error("ID client ou ID de tenant non renseigné dans config.js");
@@ -118,25 +124,44 @@ async function lireGraph() {
 
   var pca = await obtenirClientMsal();
   // Pas d'interface possible dans un gestionnaire d'événement : jeton silencieux uniquement.
-  var jeton = await pca.acquireTokenSilent({ scopes: ["User.Read"] });
+  var jeton = await pca.acquireTokenSilent({ scopes: scopes });
   if (!jeton || !jeton.accessToken) throw new Error("Jeton vide");
 
-  var reponse = await fetch(GRAPH_ME, {
+  var reponse = await fetch(url, {
     headers: { Authorization: "Bearer " + jeton.accessToken }
   });
   if (!reponse.ok) {
-    throw new Error("Graph /me : HTTP " + reponse.status + " " + (await reponse.text()));
+    throw new Error("Graph : HTTP " + reponse.status + " " + (await reponse.text()));
   }
   return await reponse.json();
 }
 
-function cleCache() {
-  return "signature-mfi:entra:" + minuscules(Office.context.mailbox.userProfile.emailAddress);
+function lireGraph() {
+  return appelGraph(GRAPH_ME, ["User.Read"]);
 }
 
-function lireCache() {
+/**
+ * Fiche Entra d'une boîte partagée (téléphones, nom affiché), recherchée par son adresse.
+ * Nécessite la permission déléguée User.Read.All (consentement administrateur).
+ */
+async function lireFicheBoite(adresse) {
+  var filtre = "mail eq '" + minuscules(adresse).replace(/'/g, "''") + "'";
+  var url =
+    "https://graph.microsoft.com/v1.0/users?$filter=" + encodeURIComponent(filtre) +
+    "&$select=displayName,jobTitle,businessPhones,mobilePhone,mail";
+  var resultat = await appelGraph(url, ["User.Read.All"]);
+  var fiche = resultat && resultat.value && resultat.value[0];
+  if (!fiche) throw new Error("Aucune fiche Entra pour " + adresse);
+  return fiche;
+}
+
+function cleCache(adresse) {
+  return "signature-mfi:entra:" + minuscules(adresse || Office.context.mailbox.userProfile.emailAddress);
+}
+
+function lireCache(adresse) {
   try {
-    var brut = window.localStorage.getItem(cleCache());
+    var brut = window.localStorage.getItem(cleCache(adresse));
     if (!brut) return null;
     var entree = JSON.parse(brut);
     if (!entree || !entree.date || Date.now() - entree.date > SIGNATURE_MFI_CONFIG.dureeCacheMs) return null;
@@ -146,9 +171,9 @@ function lireCache() {
   }
 }
 
-function ecrireCache(donnees) {
+function ecrireCache(donnees, adresse) {
   try {
-    window.localStorage.setItem(cleCache(), JSON.stringify({ date: Date.now(), donnees: donnees }));
+    window.localStorage.setItem(cleCache(adresse), JSON.stringify({ date: Date.now(), donnees: donnees }));
   } catch (e) {
     /* stockage indisponible : sans importance */
   }
@@ -175,6 +200,32 @@ async function lirePersonne() {
   var profil = Office.context.mailbox.userProfile;
   journal("Repli sur le profil Outlook.");
   return SignatureMFI.depuisGraph({ displayName: profil.displayName, mail: profil.emailAddress });
+}
+
+/**
+ * Complète la variante boîte partagée avec sa fiche Entra : titre (« Poste », sinon
+ * nom complet) et téléphones. Ce qui est forcé dans config.js reste prioritaire.
+ * En cas d'échec : dernières données connues (cache local), sinon nom affiché du « De »
+ * et pas de téléphone. Ne lève jamais d'erreur.
+ */
+async function completerBoite(boite) {
+  if (!boite || (boite.telephone && boite.libelleConfigure)) return boite; // tout est forcé dans config.js
+  var fiche = null;
+  try {
+    fiche = await avecDelai(lireFicheBoite(boite.adresse), SIGNATURE_MFI_CONFIG.delaiGraphMs, "Graph (boîte)");
+    ecrireCache(fiche, boite.adresse);
+    journal("Fiche Entra de la boîte lue via Graph :", boite.adresse);
+  } catch (e) {
+    journal("Fiche Entra de la boîte indisponible :", e && e.message ? e.message : e);
+    fiche = lireCache(boite.adresse);
+    if (fiche) journal("Utilisation des dernières données connues de la boîte (cache local).");
+  }
+  if (fiche) {
+    if (!boite.telephone) boite.telephones = SignatureMFI.telephonesGraph(fiche);
+    // Titre : « Poste » (jobTitle) de la fiche si rempli, sinon son nom complet (sauf titre forcé dans config.js).
+    if (!boite.libelleConfigure) boite.libelle = fiche.jobTitle || fiche.displayName || boite.libelle;
+  }
+  return boite;
 }
 
 /* ------------------------------------------------------------------ */
@@ -204,7 +255,8 @@ function determinerBoite(expediteur) {
       var b = connues[adresse];
       return {
         adresse: expediteur.adresse,
-        libelle: b.libelle || expediteur.nom,
+        libelle: b.libelle || expediteur.nom || expediteur.adresse,
+        libelleConfigure: !!b.libelle,
         telephone: b.telephone || "",
         afficherNomUtilisateur: b.afficherNomUtilisateur !== false
       };
@@ -283,8 +335,10 @@ async function poserSignature(event, origine) {
     journal("Événement :", origine);
 
     var expediteur = await lireExpediteur(item);
-    var boite = determinerBoite(expediteur);
-    var personne = await lirePersonne();
+    // Fiche de l'utilisateur et, le cas échéant, fiche de la boîte partagée : lues en parallèle.
+    var lectures = await Promise.all([lirePersonne(), completerBoite(determinerBoite(expediteur))]);
+    var personne = lectures[0];
+    var boite = lectures[1];
 
     var nomLogo = null;
     try {

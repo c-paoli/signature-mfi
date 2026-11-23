@@ -102,6 +102,25 @@ test("variante boîte partagée : libellé, nom de l'expéditeur, adresse de la 
   assert.match(html, /cid:logo-mfi-abc\.png/);
 });
 
+test("boîte partagée : téléphones de la fiche Entra, sauf numéro forcé dans la config", () => {
+  const fiche = { businessPhones: ["04 95 22 22 22"], mobilePhone: "04.95.22.22.22" };
+  const base = { adresse: "sav@exemple.fr", libelle: "SAV", telephone: "", afficherNomUtilisateur: true };
+  const personne = SignatureMFI.depuisGraph(complet);
+
+  const html = SignatureMFI.construire(personne, config, Object.assign({}, base, { telephones: SignatureMFI.telephonesGraph(fiche) }));
+  ligne(html, "04 95 22 22 22");
+  assert.doesNotMatch(html, /04\.95\.22\.22\.22/); // doublon fixe / mobile retiré
+  assert.doesNotMatch(html, /04 95 00 00 00/); // pas le téléphone de l'utilisateur
+
+  const force = SignatureMFI.construire(personne, config, Object.assign({}, base, { telephone: "04 95 33 33 33", telephones: ["04 95 22 22 22"] }));
+  ligne(force, "04 95 33 33 33");
+  assert.doesNotMatch(force, /04 95 22 22 22/);
+
+  const sansFiche = SignatureMFI.construire(personne, config, base);
+  assert.doesNotMatch(sansFiche, /04 95/); // pas de puce orpheline
+  assert.strictEqual((sansFiche.match(/&#9679;/g) || []).length, 1); // seule la puce du mail
+});
+
 test("la boîte SAV est configurée", () => {
   assert.ok(config.boitesPartagees["sav@mfi.corsica"]);
 });

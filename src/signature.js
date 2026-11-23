@@ -65,21 +65,28 @@ var SignatureMFI = (function () {
    * Normalise une réponse Graph /me (ou des données partielles) en « personne ».
    * Champs Graph : givenName, surname, displayName, jobTitle, businessPhones, mobilePhone, mail.
    */
+  /** Liste de numéros nettoyée, sans vide ni doublon (même numéro saisi en fixe et en mobile). */
+  function telephonesUniques(liste) {
+    var vus = {};
+    return (liste || [])
+      .map(nettoyer)
+      .filter(function (t) {
+        var cle = t.replace(/[^\d+]/g, "");
+        if (!t || vus[cle]) return false;
+        vus[cle] = true;
+        return true;
+      });
+  }
+
+  /** Téléphones d'une fiche Graph : fixe(s) puis mobile (règle A : tout ce qui est rempli). */
+  function telephonesGraph(g) {
+    g = g || {};
+    return telephonesUniques([].concat(g.businessPhones || [], g.mobilePhone || []));
+  }
+
   function depuisGraph(g) {
     g = g || {};
-    var telephones = [];
-    (g.businessPhones || []).forEach(function (t) {
-      if (nettoyer(t)) telephones.push(nettoyer(t));
-    });
-    if (nettoyer(g.mobilePhone)) telephones.push(nettoyer(g.mobilePhone));
-    // Pas de doublon (même numéro saisi en fixe et en mobile)
-    var vus = {};
-    telephones = telephones.filter(function (t) {
-      var cle = t.replace(/[^\d+]/g, "");
-      if (vus[cle]) return false;
-      vus[cle] = true;
-      return true;
-    });
+    var telephones = telephonesGraph(g);
     return {
       prenom: nettoyer(g.givenName),
       nom: nettoyer(g.surname),
@@ -120,7 +127,8 @@ var SignatureMFI = (function () {
    * Construit le HTML de la signature.
    * @param {object} personne  résultat de depuisGraph()
    * @param {object} config    SIGNATURE_MFI_CONFIG
-   * @param {object} [boite]   variante boîte partagée : { adresse, libelle, telephone, afficherNomUtilisateur }
+   * @param {object} [boite]   variante boîte partagée :
+   *                            { adresse, libelle, telephone (forcé, config.js), telephones (fiche Entra), afficherNomUtilisateur }
    * @param {string} [nomLogo] nom de la pièce jointe incorporée du logo (référencée en cid:)
    */
   function construire(personne, config, boite, nomLogo) {
@@ -150,7 +158,12 @@ var SignatureMFI = (function () {
 
     // Bloc 2 : coordonnées
     var contact = [];
-    var telephones = boite ? (nettoyer(boite.telephone) ? [nettoyer(boite.telephone)] : []) : personne.telephones || [];
+    // Boîte partagée : numéro forcé dans config.js s'il y en a un, sinon ceux de sa fiche Entra.
+    var telephones = boite
+      ? nettoyer(boite.telephone)
+        ? [nettoyer(boite.telephone)]
+        : telephonesUniques(boite.telephones)
+      : personne.telephones || [];
     telephones.forEach(function (t) {
       contact.push({ html: puce + echapper(t), style: STYLES.contact });
     });
@@ -226,6 +239,7 @@ var SignatureMFI = (function () {
 
   return {
     depuisGraph: depuisGraph,
+    telephonesGraph: telephonesGraph,
     construire: construire,
     ligneNom: ligneNom,
     echapper: echapper
