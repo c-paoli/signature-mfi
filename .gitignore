@@ -1,5 +1,3 @@
-# Logo fourni à l’origine (copie publiée : assets/logo-mfi.png)
-Logo/
 
 node_modules/
 *.log
@@ -10,5 +8,5 @@ desktop.ini
 # Notes de travail internes (noms, adresse mail) : hors dépôt public
 CLAUDE.md
 
-# Documents de présentation (captures avec noms et numéros) : hors dépôt public
-Présentation/
+# Documents livrés à Cédric (présentation, compte rendu, logo d'origine, captures avec noms et numéros) : hors dépôt public
+Livrables/
