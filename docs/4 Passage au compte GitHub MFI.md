@@ -14,7 +14,7 @@ Activer GitHub Pages sur le nouveau dépôt (comme dans la doc 2) et vérifier :
 
 ## 2. Entra : ajouter la nouvelle URI de redirection
 
-Inscription **Signature MFI** > **Authentification** > plateforme SPA > **Ajouter un URI** :
+Inscription **Signature MFI (Graph)** (ID client `4437b7a2-…`, pas celle créée par Applications intégrées) > **Authentification** > plateforme SPA > **Ajouter un URI** :
 ```
 brk-multihub://<COMPTE_MFI>.github.io
 ```

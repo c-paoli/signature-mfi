@@ -11,7 +11,7 @@ Rôle requis : Administrateur d'application (ou Administrateur général) pour l
 1. Ouvrir le centre d'administration Entra : <https://entra.microsoft.com>
 2. **Identité** > **Applications** > **Inscriptions d'applications** > **Nouvelle inscription**.
 3. Renseigner :
-   - **Nom** : `Signature MFI`
+   - **Nom** : `Signature MFI (Graph)` (renommée ainsi le 24/11/2026, voir l'encadré ci-dessous)
    - **Types de comptes pris en charge** : *Comptes dans cet annuaire d'organisation uniquement (MFI uniquement – locataire unique)*
    - **URI de redirection** : plateforme **Application monopage (SPA)**, valeur :
      ```
@@ -28,10 +28,15 @@ Rôle requis : Administrateur d'application (ou Administrateur général) pour l
    - Cliquer **Accorder un consentement d'administrateur pour MFI** > **Oui**. L'état doit passer à « Accordé pour MFI ».
 6. Ne **pas** créer de secret ni de certificat (application publique, aucun secret).
 
+> **Attention : deux inscriptions « Signature MFI » coexistent, ne supprimer ni l'une ni l'autre.**
+> - **Signature MFI (Graph)** — ID client `4437b7a2-3d34-4e57-8ff7-0c890c2f9e83` : celle de cette procédure, utilisée par le code (MSAL / Graph, URI `brk-multihub://…`, permissions `User.Read` + `User.Read.All`).
+> - **Signature MFI** (sans URI ni secret) — ID `5a7b56f5-a2a1-4b8b-afbb-22ce42613de8` : créée **automatiquement** par Applications intégrées lors du déploiement du complément (elle prend le nom du manifeste). Sa suppression le 23/11/2026 a fait disparaître le complément des Applications déployées (panne du 24/11/2026). On la reconnaît à l'ID, pas au nom.
+
 ## Contrôle
 
 | Élément | Valeur attendue |
 |---|---|
+| Nom | `Signature MFI (Graph)` — ID client `4437b7a2-…` |
 | Comptes pris en charge | Locataire unique |
 | Plateforme | SPA |
 | URI de redirection | `brk-multihub://c-paoli.github.io` |

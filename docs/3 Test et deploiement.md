@@ -32,6 +32,8 @@ Même circuit que la production. Avant cette étape, **supprimer le complément 
 5. Accepter les autorisations demandées (lecture / écriture de l'élément en cours de rédaction) > **Déployer**.
 6. Délai de propagation : de quelques minutes à **24 h**. Redémarrer Outlook (et l'application mobile) ensuite.
 
+> Le déploiement crée **automatiquement** une inscription d'application « Signature MFI » dans Entra (sans URI ni secret). **Ne pas la supprimer** : ce n'est pas un doublon, elle représente le complément déployé. Sa suppression le 23/11/2026 a retiré le complément des Applications déployées. Notre inscription à nous s'appelle « Signature MFI (Graph) » (voir doc 1).
+
 ## Étape C — Toute l'organisation, filtrée par domaine (après validation)
 
 **Ne pas faire sans validation explicite de Cédric.**
